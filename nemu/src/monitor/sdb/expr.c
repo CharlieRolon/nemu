@@ -22,6 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
+  TK_DEC, TK_HEX,
 
   /* TODO: Add more token types */
 
@@ -38,7 +39,14 @@ static struct rule {
 
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
+  {"\\*", '*'},         // time
+  {"\\-", '-'},         // minus
+  {"\\/", '/'},         // divide
   {"==", TK_EQ},        // equal
+  {"[0-9]*", TK_DEC},   // decimal numbers
+  {"0x[0-9a-fA-F]*", TK_HEX},   // hexi numbers
+  {"\\(", '('},         // left bracket
+  {"\\)", ')'},         // left bracket
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -73,6 +81,7 @@ static int nr_token __attribute__((used))  = 0;
 static bool make_token(char *e) {
   int position = 0;
   int i;
+  int index = 0;
   regmatch_t pmatch;
 
   nr_token = 0;
@@ -94,8 +103,25 @@ static bool make_token(char *e) {
          * of tokens, some extra actions should be performed.
          */
 
+        tokens[index].type = rules[i].token_type;
         switch (rules[i].token_type) {
-          default: TODO();
+          case TK_DEC:
+            if (substr_len<=32)
+              memcpy(tokens[index].str, substr_start, substr_len);
+            else {
+              Log("token string buffer overflows");
+              return false;
+            }
+            break;
+          case TK_HEX:
+            if (substr_len-2<=32)
+              memcpy(tokens[index].str, substr_start+2, substr_len-2);
+            else {
+              Log("token string buffer overflows");
+              return false;
+            }
+            break;
+          default: break;
         }
 
         break;
