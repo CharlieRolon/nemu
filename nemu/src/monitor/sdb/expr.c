@@ -75,6 +75,9 @@ typedef struct token {
   char str[32];
 } Token;
 
+static word_t eval(Token *, Token *);
+static bool check_parentheses(Token *, Token *);
+
 static Token tokens[32] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
@@ -105,17 +108,11 @@ static bool make_token(char *e) {
 
         tokens[index].type = rules[i].token_type;
         switch (rules[i].token_type) {
-          case TK_DEC:
-            if (substr_len<=32)
+          case TK_DEC: case TK_HEX:
+            if (substr_len<=32) {
               memcpy(tokens[index].str, substr_start, substr_len);
-            else {
-              Log("token string buffer overflows");
-              return false;
+              *(tokens[index].str+substr_len) = '\0';
             }
-            break;
-          case TK_HEX:
-            if (substr_len-2<=32)
-              memcpy(tokens[index].str, substr_start+2, substr_len-2);
             else {
               Log("token string buffer overflows");
               return false;
@@ -123,7 +120,7 @@ static bool make_token(char *e) {
             break;
           default: break;
         }
-
+        nr_token++;
         break;
       }
     }
@@ -137,6 +134,45 @@ static bool make_token(char *e) {
   return true;
 }
 
+static word_t eval(Token *p, Token *q) {
+  if (p > q) {
+    printf("Bad expression");
+    return 0;
+  }
+  else if (p == q) {
+    word_t value = 0;
+    if (p->type == TK_DEC) {
+      sscanf(p->str, "%d", &value);
+      return value;
+    }
+    if (p->type == TK_HEX) {
+      sscanf(p->str, "%x", &value);
+      return value;
+    }
+  }
+  else if (check_parentheses(p, q) == true) {
+    return eval(p+1, q-1);
+  }
+  else {
+    // TODO: find main op
+    Token *op = &tokens[2];
+    word_t val1 = eval(p, op - 1);
+    word_t val2 = eval(op + 1, q);
+
+    switch (op->type) {
+      case '+': return val1 + val2;
+      case '-': return val1 - val2;
+      case '*': return val1 * val2;
+      case '/': return val1 / val2;
+      default: assert(0);
+    }
+  }
+  return 0;
+}
+
+static bool check_parentheses(Token *p, Token *q) {
+  return false;
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -145,7 +181,8 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  word_t value = eval(tokens, tokens+nr_token-1);
+  
 
-  return 0;
+  return value;
 }
