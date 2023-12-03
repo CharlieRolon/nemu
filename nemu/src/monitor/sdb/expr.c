@@ -43,8 +43,8 @@ static struct rule {
   {"\\-", '-'},         // minus
   {"\\/", '/'},         // divide
   {"==", TK_EQ},        // equal
-  {"[0-9]*", TK_DEC},   // decimal numbers
   {"0x[0-9a-fA-F]*", TK_HEX},   // hexi numbers
+  {"[0-9]*", TK_DEC},   // decimal numbers
   {"\\(", '('},         // left bracket
   {"\\)", ')'},         // left bracket
 };
@@ -84,7 +84,6 @@ static int nr_token __attribute__((used))  = 0;
 static bool make_token(char *e) {
   int position = 0;
   int i;
-  int index = 0;
   regmatch_t pmatch;
 
   nr_token = 0;
@@ -106,21 +105,23 @@ static bool make_token(char *e) {
          * of tokens, some extra actions should be performed.
          */
 
-        tokens[index].type = rules[i].token_type;
         switch (rules[i].token_type) {
+          case TK_NOTYPE: break;
           case TK_DEC: case TK_HEX:
             if (substr_len<=32) {
-              memcpy(tokens[index].str, substr_start, substr_len);
-              *(tokens[index].str+substr_len) = '\0';
+              memcpy(tokens[nr_token].str, substr_start, substr_len);
+              *(tokens[nr_token].str+substr_len) = '\0';
+              tokens[nr_token++].type = rules[i].token_type;
             }
             else {
               Log("token string buffer overflows");
               return false;
             }
             break;
-          default: break;
+          default:
+            tokens[nr_token++].type = rules[i].token_type;
+            break;
         }
-        nr_token++;
         break;
       }
     }
