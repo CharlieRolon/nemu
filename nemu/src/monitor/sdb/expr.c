@@ -43,8 +43,8 @@ static struct rule {
   {"\\-", '-'},         // minus
   {"\\/", '/'},         // divide
   {"==", TK_EQ},        // equal
-  {"0x[0-9a-fA-F]*", TK_HEX},   // hexi numbers
-  {"[0-9]*", TK_DEC},   // decimal numbers
+  {"0x[0-9a-fA-F]+", TK_HEX},   // hexi numbers
+  {"[0-9]+", TK_DEC},   // decimal numbers
   {"\\(", '('},         // left bracket
   {"\\)", ')'},         // left bracket
 };
