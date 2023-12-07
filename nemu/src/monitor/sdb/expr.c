@@ -77,6 +77,7 @@ typedef struct token {
 
 static word_t eval(Token *, Token *);
 static bool check_parentheses(Token *, Token *);
+static Token* get_main_op(Token *, Token *);
 
 static Token tokens[32] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
@@ -155,8 +156,7 @@ static word_t eval(Token *p, Token *q) {
     return eval(p+1, q-1);
   }
   else {
-    // TODO: find main op
-    Token *op = &tokens[2];
+    Token *op = get_main_op(p, q);
     word_t val1 = eval(p, op - 1);
     word_t val2 = eval(op + 1, q);
 
@@ -172,7 +172,32 @@ static word_t eval(Token *p, Token *q) {
 }
 
 static bool check_parentheses(Token *p, Token *q) {
-  return false;
+  int cnt = 0;
+  if (p->type=='(' && q->type==')') {
+    for (p++; p!=q; p++)
+      if (p->type=='(')
+        cnt++;
+      else if (p->type==')') {
+        cnt--;
+        if (cnt<0) return false;
+      }
+    return cnt?false:true;
+  }
+  else return false;
+}
+
+static Token* get_main_op(Token *p, Token *q) {
+  Token *main_op = NULL;
+  int in_bracket = 0;
+  for (; p!=q; p++) {
+    if (p->type=='(') in_bracket++;
+    else if (p->type==')') in_bracket--;
+    else if (!in_bracket && (p->type=='+' || p->type=='-')) main_op = p;
+    else if (!in_bracket && (p->type=='*' || p->type=='/') && (main_op->type!='+' || main_op->type!='-'))
+      main_op = p;
+    else continue;
+  }
+  return main_op;
 }
 
 word_t expr(char *e, bool *success) {
