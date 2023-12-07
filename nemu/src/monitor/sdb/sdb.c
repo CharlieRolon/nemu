@@ -139,7 +139,7 @@ static int cmd_p(char *args) {
   if (success)
     printf("%d\n\r", value);
   else
-    printf("can't evaluate the expression"); 
+    printf("can't evaluate the expression\n\r"); 
   return 0;
 }
 
