@@ -165,7 +165,9 @@ static word_t eval(Token *p, Token *q, bool *success) {
         else {
           *success = false;
           printf("divide zero error");
+          return 0;
         }
+        break;
       default: assert(0);
     }
   }
