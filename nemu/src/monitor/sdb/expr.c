@@ -160,7 +160,12 @@ static word_t eval(Token *p, Token *q, bool *success) {
       case '+': return val1 + val2;
       case '-': return val1 - val2;
       case '*': return val1 * val2;
-      case '/': return val1 / val2;
+      case '/':
+        if (val2) return val1/val2;
+        else {
+          *success = false;
+          printf("divide zero error");
+        }
       default: assert(0);
     }
   }
