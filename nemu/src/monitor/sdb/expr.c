@@ -75,7 +75,7 @@ typedef struct token {
   char str[32];
 } Token;
 
-static word_t eval(Token *, Token *);
+static word_t eval(Token *, Token *, bool *);
 static bool check_parentheses(Token *, Token *);
 static Token* get_main_op(Token *, Token *);
 
@@ -136,29 +136,25 @@ static bool make_token(char *e) {
   return true;
 }
 
-static word_t eval(Token *p, Token *q) {
+static word_t eval(Token *p, Token *q, bool *success) {
   if (p > q) {
     printf("Bad expression");
+    *success = false;
     return 0;
   }
   else if (p == q) {
     word_t value = 0;
-    if (p->type == TK_DEC) {
-      sscanf(p->str, "%d", &value);
-      return value;
-    }
-    if (p->type == TK_HEX) {
-      sscanf(p->str, "%x", &value);
-      return value;
-    }
+    if (p->type == TK_DEC) sscanf(p->str, "%d", &value);
+    if (p->type == TK_HEX) sscanf(p->str, "%x", &value);
+    return value;
   }
   else if (check_parentheses(p, q) == true) {
-    return eval(p+1, q-1);
+    return eval(p+1, q-1, success);
   }
   else {
     Token *op = get_main_op(p, q);
-    word_t val1 = eval(p, op - 1);
-    word_t val2 = eval(op + 1, q);
+    word_t val1 = eval(p, op - 1, success);
+    word_t val2 = eval(op + 1, q, success);
 
     switch (op->type) {
       case '+': return val1 + val2;
@@ -168,6 +164,7 @@ static word_t eval(Token *p, Token *q) {
       default: assert(0);
     }
   }
+  *success = false;
   return 0;
 }
 
@@ -207,7 +204,7 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  word_t value = eval(tokens, tokens+nr_token-1);
+  word_t value = eval(tokens, tokens+nr_token-1, success);
   
 
   return value;
