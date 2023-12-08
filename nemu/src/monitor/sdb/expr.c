@@ -21,8 +21,8 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
-  TK_DEC, TK_HEX,
+  TK_NOTYPE = 256, TK_EQ, TK_NEQ,
+  TK_DEC, TK_HEX, TK_REG, TK_AND, DEREF
 
   /* TODO: Add more token types */
 
@@ -38,13 +38,16 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
+  {"0x[0-9a-fA-F]+", TK_HEX},   // hex numbers
+  {"[0-9]+", TK_DEC},   // decimal numbers
+  {"$0|ra|sp|gp|tp|t0|t1|t2|s0|s1|a0|a1|a2|a3|a4|a5|a6|a7|s2|s3|s4|s5|s6|s7|s8|s9|s10|s11|t3|t4|t5|t6", TK_REG},
   {"\\+", '+'},         // plus
-  {"\\*", '*'},         // time
+  {"\\*", '*'},         // time || dereferencels
   {"\\-", '-'},         // minus
   {"\\/", '/'},         // divide
   {"==", TK_EQ},        // equal
-  {"0x[0-9a-fA-F]+", TK_HEX},   // hexi numbers
-  {"[0-9]+", TK_DEC},   // decimal numbers
+  {"!=", TK_NEQ},       // not equal
+  {"&&", TK_AND},       // logic and
   {"\\(", '('},         // left bracket
   {"\\)", ')'},         // left bracket
 };
@@ -108,7 +111,7 @@ static bool make_token(char *e) {
 
         switch (rules[i].token_type) {
           case TK_NOTYPE: break;
-          case TK_DEC: case TK_HEX:
+          case TK_DEC: case TK_HEX: case TK_REG:
             if (substr_len<=32) {
               memcpy(tokens[nr_token].str, substr_start, substr_len);
               *(tokens[nr_token].str+substr_len) = '\0';
@@ -145,8 +148,14 @@ static word_t eval(Token *p, Token *q, bool *success) {
   else if (p == q) {
     word_t value = 0;
     if (p->type == TK_DEC) sscanf(p->str, "%d", &value);
-    if (p->type == TK_HEX) sscanf(p->str, "%x", &value);
+    else if (p->type == TK_HEX) sscanf(p->str, "%x", &value);
+    else assert(0);
     return value;
+  }
+  else if (p+1 == q) {
+    if (p->type == DEREF && q->type == TK_REG) {
+      return isa_reg_str2val(q->str, success);
+    }
   }
   else if (check_parentheses(p, q) == true) {
     return eval(p+1, q-1, success);
@@ -168,6 +177,9 @@ static word_t eval(Token *p, Token *q, bool *success) {
           return 0;
         }
         break;
+      case TK_EQ: return val1 == val2;
+      case TK_NEQ: return val1 != val2;
+      case TK_AND: return val1 && val2;
       default: assert(0);
     }
   }
@@ -211,6 +223,12 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
+  int i;
+  for (i=0; i < nr_token; i++) {
+    if (tokens[i].type == '*' && (i==0 || (tokens[i-1].type != TK_DEC && tokens[i-1].type != TK_HEX && tokens[i-1].type != ')'))) {
+      tokens[i].type = DEREF;
+    }
+  }
   word_t value = eval(tokens, tokens+nr_token-1, success);
   
 
