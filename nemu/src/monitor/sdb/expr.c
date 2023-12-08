@@ -204,13 +204,18 @@ static bool check_parentheses(Token *p, Token *q) {
 
 static Token* get_main_op(Token *p, Token *q) {
   Token *main_op = NULL;
+  int level = 0;
   int in_bracket = 0;
   for (; p!=q; p++) {
     if (p->type=='(') in_bracket++;
     else if (p->type==')') in_bracket--;
-    else if (!in_bracket && (p->type=='+' || p->type=='-')) main_op = p;
-    else if (!in_bracket && (p->type=='*' || p->type=='/') && (main_op->type!='+' || main_op->type!='-'))
-      main_op = p;
+    else if (!in_bracket && (p->type==TK_AND)) {main_op = p; level = 0;}
+    else if (!in_bracket && (p->type==TK_EQ || p->type==TK_NEQ)) 
+      {if (level>=1) main_op = p; level = 1;}
+    else if (!in_bracket && (p->type=='+' || p->type=='-'))
+      {if (level>=2) main_op = p; level = 2;}
+    else if (!in_bracket && (p->type=='*' || p->type=='/'))
+      {if (level>=3) main_op = p; level = 3;}
     else continue;
   }
   return main_op;
