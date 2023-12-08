@@ -204,7 +204,7 @@ static bool check_parentheses(Token *p, Token *q) {
 
 static Token* get_main_op(Token *p, Token *q) {
   Token *main_op = NULL;
-  int level = 0;
+  int level = 0xff;
   int in_bracket = 0;
   for (; p!=q; p++) {
     if (p->type=='(') in_bracket++;
