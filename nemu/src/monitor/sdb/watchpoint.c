@@ -41,3 +41,10 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
+// return a free watchpoint from pool
+WP* new_wp() {
+  return NULL;
+}
+
+void free_wp(WP *wp) {
+}
