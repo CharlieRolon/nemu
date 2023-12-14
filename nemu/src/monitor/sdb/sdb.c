@@ -128,7 +128,7 @@ static int cmd_info(char *args) {
   if (strcmp(arg, "w")==0) {
     return 0;
   }
-  printf("use args 'r' or 'w' to see the info\n\r");
+  printf("Usage: info r or info w\n");
   return 0;
 }
 
