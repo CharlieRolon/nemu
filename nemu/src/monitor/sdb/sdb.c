@@ -153,7 +153,7 @@ static int cmd_x(char *args) {
     
     for (j = 0; i < n && j < 4; i++, j++) {
       word_t w = vaddr_read(expr, 4);
-      expr += 8;
+      expr += 4;
       printf("%#010x ", w);
     }
     puts("");
