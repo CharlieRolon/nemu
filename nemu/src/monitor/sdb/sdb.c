@@ -149,12 +149,12 @@ static int cmd_x(char *args) {
 
   int i, j;
   for (i = 0; i < n;) {
-    printf(ANSI_FMT("%#018x: ", ANSI_FG_CYAN), expr);
+    printf(ANSI_FMT("%#010x: ", ANSI_FG_CYAN), expr);
     
     for (j = 0; i < n && j < 4; i++, j++) {
       word_t w = vaddr_read(expr, 4);
       expr += 8;
-      printf("%#018x ", w);
+      printf("%#010x ", w);
     }
     puts("");
   }
