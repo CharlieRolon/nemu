@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -105,24 +106,26 @@ static int cmd_help(char *args) {
 }
 
 static int cmd_si(char *args) {
+  char *arg = strtok(NULL, " ");
   if (args==NULL) {
     cpu_exec(1);
     return 0;
   }
   else {
     int N;
-    N = atoi(args);
+    N = atoi(arg);
     cpu_exec(N);
     return 0;
   }
 }
 
 static int cmd_info(char *args) {
-  if (strcmp(args, "r")==0) {
+  char *arg = strtok(NULL, " ");
+  if (strcmp(arg, "r")==0) {
     isa_reg_display();
     return 0;
   }
-  if (strcmp(args, "w")==0) {
+  if (strcmp(arg, "w")==0) {
     return 0;
   }
   printf("use args 'r' or 'w' to see the info\n\r");
@@ -130,6 +133,31 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args) {
+  char *arg1 = strtok(NULL, " ");
+  if (arg1 == NULL) {
+    printf("Usage: x N EXPR\n");
+    return 0;
+  }
+  char *arg2 = strtok(NULL, " ");
+  if (arg1 == NULL) {
+    printf("Usage: x N EXPR\n");
+    return 0;
+  }
+
+  int n = strtol(arg1, NULL, 10);
+  vaddr_t expr = strtol(arg2, NULL, 16);
+
+  int i, j;
+  for (i = 0; i < n;) {
+    printf(ANSI_FMT("%#018x: ", ANSI_FG_CYAN), expr);
+    
+    for (j = 0; i < n && j < 4; i++, j++) {
+      word_t w = vaddr_read(expr, 4);
+      expr += 8;
+      printf("%#018x ", w);
+    }
+    puts("");
+  }
   return 0;
 }
 
@@ -137,13 +165,14 @@ static int cmd_p(char *args) {
   bool success = true;
   word_t value = expr(args, &success);
   if (success)
-    printf("0x%x\n\r", value);
+    printf("%u\n\r", value);
   else
-    printf("can't evaluate the expression\n\r"); 
+    printf("invalid expression\n\r"); 
   return 0;
 }
 
 static int cmd_w(char *args) {
+  
   return 0;
 }
 
