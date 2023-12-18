@@ -252,7 +252,7 @@ word_t expr(char *e, bool *success) {
   /* TODO: Insert codes to evaluate the expression. */
   int i;
   for (i=0; i < nr_token; i++) {
-    if (OFTYPES(tokens[i].type, op1_types) && (i==0 || OFTYPES(tokens[i-1].type, bound_types))) {
+    if (OFTYPES(tokens[i].type, op1_types) && (i==0 || !OFTYPES(tokens[i-1].type, bound_types))) {
       switch(tokens[i].type) {
         case '*': tokens[i].type = DEREF; break;
         case '+': tokens[i].type = TK_POS; break;
