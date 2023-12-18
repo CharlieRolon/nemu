@@ -55,7 +55,7 @@ static struct rule {
 #define OFTYPES(type, types) oftypes(type, types, ARRLEN(types))
 
 static int bound_types[] = {')', TK_NUM, TK_REG}; // boundary for binary operator
-static int op1_types[] = {TK_NEG, TK_POS, DEREF}; // unary operator type
+static int op1_types[] = {'+', '-', '*'}; // unary operator type
 
 static bool oftypes(int type, int types[], int size) {
   for (int i = 0; i < size; i++) {
