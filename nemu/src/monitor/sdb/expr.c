@@ -22,7 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ, TK_NEQ,
-  TK_DEC, TK_HEX, TK_REG, TK_AND, DEREF
+  TK_NUM, TK_REG, TK_AND, DEREF, TK_NEG, TK_POS
 
   /* TODO: Add more token types */
 
@@ -38,8 +38,7 @@ static struct rule {
    */
 
   {" +", TK_NOTYPE},    // spaces
-  {"0x[0-9a-fA-F]+", TK_HEX},   // hex numbers
-  {"[0-9]+", TK_DEC},   // decimal numbers
+  {"(0x)?[0-9a-fA-F]+", TK_NUM},   // numbers
   {"$0|ra|sp|gp|tp|t0|t1|t2|s0|s1|a0|a1|a2|a3|a4|a5|a6|a7|s2|s3|s4|s5|s6|s7|s8|s9|s10|s11|t3|t4|t5|t6", TK_REG},
   {"\\+", '+'},         // plus
   {"\\*", '*'},         // time || dereferencels
@@ -53,6 +52,17 @@ static struct rule {
 };
 
 #define NR_REGEX ARRLEN(rules)
+#define OFTYPES(type, types) oftypes(type, types, ARRLEN(types))
+
+static int bound_types[] = {')', TK_NUM, TK_REG}; // boundary for binary operator
+static int op1_types[] = {TK_NEG, TK_POS, DEREF}; // unary operator type
+
+static bool oftypes(int type, int types[], int size) {
+  for (int i = 0; i < size; i++) {
+    if (type == types[i]) return true;
+  }
+  return false;
+}
 
 static regex_t re[NR_REGEX] = {};
 
@@ -111,7 +121,7 @@ static bool make_token(char *e) {
 
         switch (rules[i].token_type) {
           case TK_NOTYPE: break;
-          case TK_DEC: case TK_HEX: case TK_REG:
+          case TK_NUM: case TK_REG:
             if (substr_len<=32) {
               memcpy(tokens[nr_token].str, substr_start, substr_len);
               *(tokens[nr_token].str+substr_len) = '\0';
@@ -140,21 +150,33 @@ static bool make_token(char *e) {
 }
 
 static word_t eval(Token *p, Token *q, bool *success) {
+  *success = true;
   if (p > q) {
     printf("Bad expression");
     *success = false;
     return 0;
   }
   else if (p == q) {
-    word_t value = 0;
-    if (p->type == TK_DEC) sscanf(p->str, "%d", &value);
-    else if (p->type == TK_HEX) sscanf(p->str, "%x", &value);
-    else assert(0);
-    return value;
+    if (p->type != TK_NUM) {
+      *success = false;
+      return 0;
+    }
+    word_t ret = 0;
+    if (strncmp("0x", p->str, 2) == 0) ret = strtol(p->str, NULL, 16);
+    else ret = strtol(p->str, NULL, 10);
+    return ret;
   }
   else if (p+1 == q) {
-    if (p->type == DEREF && q->type == TK_REG) {
+    if (p->type == DEREF && (q->type == TK_REG || q->type == TK_NUM)) {
       return isa_reg_str2val(q->str, success);
+    } else if ((p->type == TK_POS || p->type == TK_NEG) && q->type == TK_NUM) {
+      word_t ret = 0;
+      switch(p->type) {
+        case TK_POS: ret = strtol(q->str, NULL, 10); break;
+        case TK_NEG: ret = -strtol(q->str, NULL, 10); break;
+        default: *success = false;
+      }
+      return ret;
     }
   }
   else if (check_parentheses(p, q) == true) {
@@ -173,7 +195,7 @@ static word_t eval(Token *p, Token *q, bool *success) {
         if (val2) return val1/val2;
         else {
           *success = false;
-          printf("divide zero error\n\r");
+          printf("divide zero error\n");
           return 0;
         }
         break;
@@ -230,8 +252,12 @@ word_t expr(char *e, bool *success) {
   /* TODO: Insert codes to evaluate the expression. */
   int i;
   for (i=0; i < nr_token; i++) {
-    if (tokens[i].type == '*' && (i==0 || (tokens[i-1].type != TK_DEC && tokens[i-1].type != TK_HEX && tokens[i-1].type != ')'))) {
-      tokens[i].type = DEREF;
+    if (OFTYPES(tokens[i].type, op1_types) && (i==0 || OFTYPES(tokens[i-1].type, bound_types))) {
+      switch(tokens[i].type) {
+        case '*': tokens[i].type = DEREF; break;
+        case '+': tokens[i].type = TK_POS; break;
+        case '-': tokens[i].type = TK_NEG; break;
+      }
     }
   }
   word_t value = eval(tokens, tokens+nr_token-1, success);
