@@ -173,12 +173,12 @@ static word_t eval(Token *p, Token *q, bool *success) {
       word_t ret = 0;
       switch(p->type) {
         case TK_POS:
-          if (strncmp("0x", p->str, 2) == 0) ret = strtol(p->str, NULL, 16);
-          else ret = strtol(p->str, NULL, 10);
+          if (strncmp("0x", q->str, 2) == 0) ret = strtol(p->str, NULL, 16);
+          else ret = strtol(q->str, NULL, 10);
           break;
         case TK_NEG:
-          if (strncmp("0x", p->str, 2) == 0) ret = -strtol(p->str, NULL, 16);
-          else ret = -strtol(p->str, NULL, 10);
+          if (strncmp("0x", q->str, 2) == 0) ret = -strtol(p->str, NULL, 16);
+          else ret = -strtol(q->str, NULL, 10);
           break;
         default: *success = false;
       }
