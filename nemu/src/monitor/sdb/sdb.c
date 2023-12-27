@@ -24,6 +24,9 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void wp_watch(char *, word_t);
+void wp_remove(int );
+void wp_iterate();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -121,14 +124,23 @@ static int cmd_si(char *args) {
 
 static int cmd_info(char *args) {
   char *arg = strtok(NULL, " ");
-  if (strcmp(arg, "r")==0) {
-    isa_reg_display();
-    return 0;
+  if (arg==NULL) {
+    printf("Usage: info r (registers) or info w (watchpoints)\n");
   }
-  if (strcmp(arg, "w")==0) {
-    return 0;
+  else {
+    if (strcmp(arg, "r")==0) {
+      isa_reg_display();
+      return 0;
+    }
+    else if (strcmp(arg, "w")==0) {
+      wp_iterate();
+      return 0;
+    }
+    else {
+      printf("Usage: info r (registers) or info w (watchpoints)\n");
+    }
   }
-  printf("Usage: info r or info w\n");
+
   return 0;
 }
 
@@ -172,11 +184,29 @@ static int cmd_p(char *args) {
 }
 
 static int cmd_w(char *args) {
-  
+  if (!args) {
+    printf("Usage: w EXPR\n");
+    return 0;
+  }
+  bool success;
+  word_t val = expr(args, &success);
+  if (!success) {
+    puts("invalid expression");
+  }
+  else {
+    wp_watch(args, val);
+  }
   return 0;
 }
 
 static int cmd_d(char *args) {
+  char *arg = strtok(NULL, "");
+  if (!arg) {
+    printf("Usage: d N\n");
+    return 0;
+  }
+  int no = strtol(arg, NULL, 10);
+  wp_remove(no);
   return 0;
 }
 

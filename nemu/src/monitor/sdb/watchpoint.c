@@ -22,10 +22,8 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
-  int cnt;
-  const char *expr;
-  word_t value_before;
-  word_t value_now;
+  char *expr;
+  word_t pre_val;
 } WP;
 
 static WP wp_pool[NR_WP] = {};
@@ -45,20 +43,19 @@ void init_wp_pool() {
 /* TODO: Implement the functionality of watchpoint */
 
 // return a free watchpoint from pool
-WP* new_wp(const char *expr_str) {
-  assert(free_!=NULL);
+WP* new_wp() {
+  assert(free_);
   WP *wp = free_;
   free_ = free_->next;
-  wp->expr = expr_str; 
   wp->next = head;
   head = wp;
-  return head;
+  return wp;
 }
 
 void free_wp(WP *wp) {
   assert(wp!=NULL);
   if (wp==head) {
-    head = head->next;
+    head = NULL;
   }
   else {
     WP* pre;
@@ -66,20 +63,46 @@ void free_wp(WP *wp) {
     pre->next = wp->next;
   }
   wp->expr = NULL;
-  wp->cnt = 0;
   wp->next = free_;
   free_ = wp;
 }
 
-// bool wp_eval() {
-//   WP *wp; bool *success;
-//   for (wp=head; wp!=NULL; wp=wp->next) {
-//     wp->value_before = wp->value_now;
-//     wp->value_now = expr(wp->expr, success);
-//     if (!success) return false;
-//     wp->cnt++;
-//     if (wp->cnt==1)
-//       wp->value_before = wp->value_now;
-//   }
-//   return true;
-// }
+void wp_watch(char *expr, word_t val) {
+  WP *wp = new_wp();
+  strcpy(wp->expr, expr);
+  wp->pre_val = val;
+  printf("Watchpoint %d: %s\n", wp->NO, expr);
+}
+
+void wp_remove(int no) {
+  assert(no < NR_WP);
+  WP *wp = &wp_pool[no];
+  free_wp(wp);
+  printf("Delete watchpoint %d: %s\n", no, wp->expr);
+}
+
+void wp_iterate() {
+  WP *h = head;
+  if (!h) {
+    puts("No watchpoints.");
+    return ;
+  }
+  printf("%-8s%-8s\n", "NO", "EXPR");
+  while(h) {
+    printf("%-8d%-8s\n", h->NO, h->expr);
+    h = h->next;
+  }
+}
+
+void wp_difftest() {
+  WP* h = head;
+  while (h) {
+    bool _;
+    word_t new = expr(h->expr, &_);
+    if (h->pre_val != new) {
+      printf("Watchpoint %d: %s\n""Old value = %u\n""New value = %u\n", h->NO, h->expr, h->pre_val, new);
+      h->pre_val = new;
+    }
+    h = h->next;
+  }
+}
