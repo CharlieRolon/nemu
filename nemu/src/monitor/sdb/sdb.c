@@ -177,7 +177,7 @@ static int cmd_p(char *args) {
   bool success = true;
   word_t value = expr(args, &success);
   if (success)
-    printf("%u\n\r", value);
+    printf("0x%-10x %d\n\r", value, value);
   else
     printf("invalid expression\n\r"); 
   return 0;
