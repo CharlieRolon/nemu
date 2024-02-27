@@ -17,14 +17,13 @@
 #define __CPU_DECODE_H__
 
 #include <isa.h>
-#define IRINGBUF_SIZE 8
 
 typedef struct Decode {
   vaddr_t pc;
   vaddr_t snpc; // static next pc
   vaddr_t dnpc; // dynamic next pc
   ISADecodeInfo isa;
-  IFDEF(CONFIG_ITRACE, char logbuf[128]; char iringbuf[IRINGBUF_SIZE*128]);
+  IFDEF(CONFIG_ITRACE, char logbuf[128]);
 } Decode;
 
 // --- pattern matching mechanism ---

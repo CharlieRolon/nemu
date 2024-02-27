@@ -76,3 +76,7 @@ uint64_t get_time();
 
 
 #endif
+
+// itrace
+void trace_inst(word_t, uint32_t);
+void display_inst();

@@ -23,7 +23,7 @@
  * This is useful when you use the `si' command.
  * You can modify this value as you want.
  */
-#define MAX_INST_TO_PRINT 10
+#define MAX_INST_TO_PRINT 11
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -95,6 +95,7 @@ static void statistic() {
 
 void assert_fail_msg() {
   isa_reg_display();
+  display_inst();
   statistic();
 }
 
