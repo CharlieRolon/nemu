@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include <elf.h>
 #include <memory/paddr.h>
 
 void init_rand();
