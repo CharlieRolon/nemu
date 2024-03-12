@@ -23,8 +23,6 @@ char  *strcpy    (char *dst, const char *src);
 char  *strncpy   (char *dst, const char *src, size_t n);
 int    strcmp    (const char *s1, const char *s2);
 int    strncmp   (const char *s1, const char *s2, size_t n);
-int    sprintf   (char *str, const char *format, ...);
-int    snprintf  (char *str, size_t size, const char *format, ...);
 
 // stdlib.h
 void   srand     (unsigned int seed);
