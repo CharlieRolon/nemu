@@ -78,7 +78,7 @@ uint64_t get_time();
 // itrace
 void trace_inst(word_t, uint32_t);
 void display_inst();
-void trace_func_call(paddr_t, paddr_t);
+void trace_func_call(paddr_t, paddr_t, bool);
 void trace_func_ret(paddr_t);
 
 #endif

@@ -67,16 +67,16 @@ static int decode_exec(Decode *s) {
 
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , UJ, R(rd) = s->pc + 4; s->dnpc = s->pc + imm; IFDEF(CONFIG_ITRACE, {
             if (rd == 1) {
-              trace_func_call(s->pc, s->dnpc);
+              trace_func_call(s->pc, s->dnpc, false);
             }
           }));
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I , R(rd) = s->pc + 4; s->dnpc = (src1 + imm) & ~(word_t)1; IFDEF(CONFIG_ITRACE, {
             if (s->isa.inst.val == 0x00008067) {
               trace_func_ret(s->pc);
             } else if (rd == 1) {
-              trace_func_call(s->pc, s->dnpc);
+              trace_func_call(s->pc, s->dnpc, false);
             } else if (rd == 0 && imm == 0) {
-              trace_func_call(s->pc, s->dnpc);
+              trace_func_call(s->pc, s->dnpc, true);
             }
           }));
 
