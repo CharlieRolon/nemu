@@ -110,7 +110,7 @@ void init_monitor(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   /* Parse elf */
-  parse_elf(elf_file);
+  IFDEF(CONFIG_ITRACE, parse_elf(elf_file));
 
   /* Set random seed. */
   init_rand();

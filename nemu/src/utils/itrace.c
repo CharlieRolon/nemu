@@ -5,6 +5,7 @@
 
 #define MAX_IRINGBUF 8
 
+#ifdef CONFIG_ITRACE
 typedef struct 
 {
     word_t pc;
@@ -214,3 +215,4 @@ void trace_func_ret(paddr_t pc) {
 		}
 	}
 }
+#endif
