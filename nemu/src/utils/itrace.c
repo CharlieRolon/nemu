@@ -346,6 +346,23 @@ static void read_symbol_table(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl, int sym
     char str_tbl[sh_tbl[str_idx].sh_size];
     read_section(fd, sh_tbl[str_idx], str_tbl);
 
+    int sym_count = (sh_tbl[sym_idx].sh_size / sizeof(Elf32_Sym));
+    
+    log_write("Symbol count: %d\n", sym_count);
+    log_write("====================================================\n");
+    log_write(" num    value            type size       name\n");
+    log_write("====================================================\n");
+    for (int i = 0; i < sym_count; i++) {
+        log_write(" %-3d    %016x %-4d %-10d %s\n",
+        i,
+        sym_tbl[i].st_value, 
+        ELF64_ST_TYPE(sym_tbl[i].st_info),
+        sym_tbl[i].st_size,
+        str_tbl + sym_tbl[i].st_name
+        );
+    }
+    log_write("====================================================\n\n");
+
     int sym_tbl_size = (sh_tbl[sym_idx].sh_size / sizeof(Elf32_Sym));
     symbol_tbl = malloc(sizeof(SymEntry) * sym_tbl_size);
 
