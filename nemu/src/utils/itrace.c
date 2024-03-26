@@ -4,7 +4,6 @@
 #include <elf.h>
 
 #define MAX_IRINGBUF 8
-
 #ifdef CONFIG_ITRACE
 typedef struct 
 {
@@ -54,7 +53,7 @@ typedef struct {
 
 typedef struct tail_rec_node {
     paddr_t pc;
-    int depth;
+    paddr_t depend;
     struct tail_rec_node *next;
 } TailRecNode;
 
@@ -70,6 +69,229 @@ static void read_elf_header(int fd, Elf32_Ehdr * eh) {
     // check Magic Number
     if (strncmp((char*)eh->e_ident, ELFMAG, 4) != 0)
         panic("malformed ELF file");
+}
+
+static void display_elf_header(Elf32_Ehdr eh) {
+	/* Storage capacity class */
+	log_write("Storage class\t= ");
+	switch(eh.e_ident[EI_CLASS])
+	{
+		case ELFCLASS32:
+			log_write("32-bit objects\n");
+			break;
+
+		case ELFCLASS64:
+			log_write("64-bit objects\n");
+			break;
+
+		default:
+			log_write("INVALID CLASS\n");
+			break;
+	}
+
+	/* Data Format */
+	log_write("Data format\t= ");
+	switch(eh.e_ident[EI_DATA])
+	{
+		case ELFDATA2LSB:
+			log_write("2's complement, little endian\n");
+			break;
+
+		case ELFDATA2MSB:
+			log_write("2's complement, big endian\n");
+			break;
+
+		default:
+			log_write("INVALID Format\n");
+			break;
+	}
+
+	/* OS ABI */
+	log_write("OS ABI\t\t= ");
+	switch(eh.e_ident[EI_OSABI])
+	{
+		case ELFOSABI_SYSV:
+			log_write("UNIX System V ABI\n");
+			break;
+
+		case ELFOSABI_HPUX:
+			log_write("HP-UX\n");
+			break;
+
+		case ELFOSABI_NETBSD:
+			log_write("NetBSD\n");
+			break;
+
+		case ELFOSABI_LINUX:
+			log_write("Linux\n");
+			break;
+
+		case ELFOSABI_SOLARIS:
+			log_write("Sun Solaris\n");
+			break;
+
+		case ELFOSABI_AIX:
+			log_write("IBM AIX\n");
+			break;
+
+		case ELFOSABI_IRIX:
+			log_write("SGI Irix\n");
+			break;
+
+		case ELFOSABI_FREEBSD:
+			log_write("FreeBSD\n");
+			break;
+
+		case ELFOSABI_TRU64:
+			log_write("Compaq TRU64 UNIX\n");
+			break;
+
+		case ELFOSABI_MODESTO:
+			log_write("Novell Modesto\n");
+			break;
+
+		case ELFOSABI_OPENBSD:
+			log_write("OpenBSD\n");
+			break;
+
+		case ELFOSABI_ARM_AEABI:
+			log_write("ARM EABI\n");
+			break;
+
+		case ELFOSABI_ARM:
+			log_write("ARM\n");
+			break;
+
+		case ELFOSABI_STANDALONE:
+			log_write("Standalone (embedded) app\n");
+			break;
+
+		default:
+			log_write("Unknown (0x%x)\n", eh.e_ident[EI_OSABI]);
+			break;
+	}
+
+	/* ELF filetype */
+	log_write("Filetype \t= ");
+	switch(eh.e_type)
+	{
+		case ET_NONE:
+			log_write("N/A (0x0)\n");
+			break;
+
+		case ET_REL:
+			log_write("Relocatable\n");
+			break;
+
+		case ET_EXEC:
+			log_write("Executable\n");
+			break;
+
+		case ET_DYN:
+			log_write("Shared Object\n");
+			break;
+		default:
+			log_write("Unknown (0x%x)\n", eh.e_type);
+			break;
+	}
+
+	/* ELF Machine-id */
+	log_write("Machine\t\t= ");
+	switch(eh.e_machine)
+	{
+		case EM_NONE:
+			log_write("None (0x0)\n");
+			break;
+
+		case EM_386:
+			log_write("INTEL x86 (0x%x)\n", EM_386);
+			break;
+
+		case EM_X86_64:
+			log_write("AMD x86_64 (0x%x)\n", EM_X86_64);
+			break;
+
+		case EM_AARCH64:
+			log_write("AARCH64 (0x%x)\n", EM_AARCH64);
+			break;
+
+		default:
+			log_write(" 0x%x\n", eh.e_machine);
+			break;
+	}
+
+	/* Entry point */
+	log_write("Entry point\t= 0x%08x\n", eh.e_entry);
+
+	/* ELF header size in bytes */
+	log_write("ELF header size\t= 0x%08x\n", eh.e_ehsize);
+
+	/* Program Header */
+	log_write("Program Header\t= ");
+	log_write("0x%08x\n", eh.e_phoff);		/* start */
+	log_write("\t\t  %d entries\n", eh.e_phnum);	/* num entry */
+	log_write("\t\t  %d bytes\n", eh.e_phentsize);	/* size/entry */
+
+	/* Section header starts at */
+	log_write("Section Header\t= ");
+	log_write("0x%08x\n", eh.e_shoff);		/* start */
+	log_write("\t\t  %d entries\n", eh.e_shnum);	/* num entry */
+	log_write("\t\t  %d bytes\n", eh.e_shentsize);	/* size/entry */
+	log_write("\t\t  0x%08x (string table offset)\n", eh.e_shstrndx);
+
+	/* File flags (Machine specific)*/
+	log_write("File flags \t= 0x%08x\n", eh.e_flags);
+
+	/* ELF file flags are machine specific.
+	 * INTEL implements NO flags.
+	 * ARM implements a few.
+	 * Add support below to parse ELF file flags on ARM
+	 */
+	int32_t ef = eh.e_flags;
+	log_write("\t\t  ");
+
+	if(ef & EF_ARM_RELEXEC)
+		log_write(",RELEXEC ");
+
+	if(ef & EF_ARM_HASENTRY)
+		log_write(",HASENTRY ");
+
+	if(ef & EF_ARM_INTERWORK)
+		log_write(",INTERWORK ");
+
+	if(ef & EF_ARM_APCS_26)
+		log_write(",APCS_26 ");
+
+	if(ef & EF_ARM_APCS_FLOAT)
+		log_write(",APCS_FLOAT ");
+
+	if(ef & EF_ARM_PIC)
+		log_write(",PIC ");
+
+	if(ef & EF_ARM_ALIGN8)
+		log_write(",ALIGN8 ");
+
+	if(ef & EF_ARM_NEW_ABI)
+		log_write(",NEW_ABI ");
+
+	if(ef & EF_ARM_OLD_ABI)
+		log_write(",OLD_ABI ");
+
+	if(ef & EF_ARM_SOFT_FLOAT)
+		log_write(",SOFT_FLOAT ");
+
+	if(ef & EF_ARM_VFP_FLOAT)
+		log_write(",VFP_FLOAT ");
+
+	if(ef & EF_ARM_MAVERICK_FLOAT)
+		log_write(",MAVERICK_FLOAT ");
+
+	log_write("\n");
+
+	/* MSB of flags conatins ARM EABI version */
+	log_write("ARM EABI\t= Version %d\n", (ef & EF_ARM_EABIMASK)>>24);
+
+	log_write("\n");	/* End of ELF header */
 }
 
 static void read_section_header(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl) {
@@ -127,12 +349,13 @@ static void init_tail_rec_list() {
 
 void parse_elf(const char *elf_file) {
     if (elf_file == NULL) return;
-    log_write("specified ELF file: %s", elf_file);
+    log_write("specified ELF file: %s\n", elf_file);
     int fd = open(elf_file, O_RDONLY|O_SYNC);
     Assert(fd >= 0, "Error %d: unable to open %s\n", fd, elf_file);
 
     Elf32_Ehdr eh;
     read_elf_header(fd, &eh);
+    display_elf_header(eh);
 
     Elf32_Shdr sh_tbl[eh.e_shnum];
     read_section_header(fd, eh, sh_tbl);
@@ -158,10 +381,10 @@ static int find_symbol_func(paddr_t target, bool is_call) {
     return i<symbol_tbl_size?i:-1;
 }
 
-static void insert_tail_rec(paddr_t pc, int depth) {
+static void insert_tail_rec(paddr_t pc, paddr_t depend) {
 	TailRecNode *node = (TailRecNode *)malloc(sizeof(TailRecNode));
 	node->pc = pc;
-	node->depth = depth;
+	node->depend = depend;
 	node->next = tail_rec_head->next;
 	tail_rec_head->next = node;
 }
@@ -208,7 +431,8 @@ void trace_func_ret(paddr_t pc) {
 
 	TailRecNode *node = tail_rec_head->next;
 	if (node != NULL) {
-		if (node->depth == call_depth) {
+        int depend_i = find_symbol_func(node->depend, true);
+		if (depend_i == i) {
 			paddr_t ret_target = node->pc;
 			remove_tail_rec();
 			trace_func_ret(ret_target);
