@@ -109,9 +109,6 @@ void init_monitor(int argc, char *argv[]) {
   /* Parse arguments. */
   parse_args(argc, argv);
 
-  /* Parse elf */
-  IFDEF(CONFIG_ITRACE, parse_elf(elf_file));
-
   /* Set random seed. */
   init_rand();
 
@@ -120,6 +117,9 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize memory. */
   init_mem();
+
+  /* Parse elf */
+  IFDEF(CONFIG_ITRACE, parse_elf(elf_file));
 
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
