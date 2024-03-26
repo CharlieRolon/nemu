@@ -144,7 +144,8 @@ void parse_elf(const char *elf_file) {
     close(fd);
 }
 
-static int find_symbol_func(paddr_t target, bool is_call) {
+static int find_symbol_func(paddr_t target, b
+ool is_call) {
     int i;
     for (i = 0; i < symbol_tbl_size; i++) {
         if (ELF32_ST_TYPE(symbol_tbl[i].info) == STT_FUNC) {
