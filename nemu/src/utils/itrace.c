@@ -347,7 +347,7 @@ static void read_symbol_table(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl, int sym
     read_section(fd, sh_tbl[str_idx], str_tbl);
 
     int sym_count = (sh_tbl[sym_idx].sh_size / sizeof(Elf32_Sym));
-    
+
     log_write("Symbol count: %d\n", sym_count);
     log_write("====================================================\n");
     log_write(" num    value            type size       name\n");
@@ -363,8 +363,8 @@ static void read_symbol_table(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl, int sym
     }
     log_write("====================================================\n\n");
 
-    int sym_tbl_size = (sh_tbl[sym_idx].sh_size / sizeof(Elf32_Sym));
-    symbol_tbl = malloc(sizeof(SymEntry) * sym_tbl_size);
+    symbol_tbl_size = sym_count;
+    symbol_tbl = malloc(sizeof(SymEntry) * symbol_tbl_size);
 
     int i;
     for (i = 0; i < symbol_tbl_size; i++) {
