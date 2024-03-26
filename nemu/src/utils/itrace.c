@@ -308,6 +308,36 @@ static void read_section(int fd, Elf32_Shdr sh, void *dst) {
     assert(read(fd, dst, sh.sh_size) == sh.sh_size);
 }
 
+static void display_section_headers(int fd, Elf32_Ehdr eh, Elf32_Shdr sh_tbl[]) {
+  // warn: C99
+	char sh_str[sh_tbl[eh.e_shstrndx].sh_size];
+  read_section(fd, sh_tbl[eh.e_shstrndx], sh_str);
+  
+	/* Read section-header string-table */
+
+	log_write("========================================");
+	log_write("========================================\n");
+	log_write(" idx offset     load-addr  size       algn"
+			" flags      type       section\n");
+	log_write("========================================");
+	log_write("========================================\n");
+
+	for(int i = 0; i < eh.e_shnum; i++) {
+		log_write(" %03d ", i);
+		log_write("0x%08x ", sh_tbl[i].sh_offset);
+		log_write("0x%08x ", sh_tbl[i].sh_addr);
+		log_write("0x%08x ", sh_tbl[i].sh_size);
+		log_write("%-4d ", sh_tbl[i].sh_addralign);
+		log_write("0x%08x ", sh_tbl[i].sh_flags);
+		log_write("0x%08x ", sh_tbl[i].sh_type);
+		log_write("%s\t", (sh_str + sh_tbl[i].sh_name));
+		log_write("\n");
+	}
+	log_write("========================================");
+	log_write("========================================\n");
+	log_write("\n");	/* end of section header table */
+}
+
 static void read_symbol_table(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl, int sym_idx) {
     Elf32_Sym sym_tbl[sh_tbl[sym_idx].sh_size];
     read_section(fd, sh_tbl[sym_idx], sym_tbl);
@@ -359,6 +389,7 @@ void parse_elf(const char *elf_file) {
 
     Elf32_Shdr sh_tbl[eh.e_shnum];
     read_section_header(fd, eh, sh_tbl);
+    display_section_headers(fd, eh, sh_tbl); 
 
     read_symbols(fd, eh, sh_tbl);
 
