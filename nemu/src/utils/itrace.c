@@ -356,7 +356,7 @@ static void read_symbol_table(int fd, Elf32_Ehdr eh, Elf32_Shdr *sh_tbl, int sym
         log_write(" %-3d    %016x %-4d %-10d %s\n",
         i,
         sym_tbl[i].st_value, 
-        ELF64_ST_TYPE(sym_tbl[i].st_info),
+        ELF32_ST_TYPE(sym_tbl[i].st_info),
         sym_tbl[i].st_size,
         str_tbl + sym_tbl[i].st_name
         );
