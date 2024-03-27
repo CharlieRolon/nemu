@@ -57,7 +57,7 @@ int sprintf(char *str, const char *format, ...) {
         case 's': 
           char *s = va_arg(pArgs, char*);
           strcpy(str, s);
-          str += strlen(s);
+          str += strlen(str);
           break;
       }
     }

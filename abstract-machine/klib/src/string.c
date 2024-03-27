@@ -5,24 +5,27 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 size_t strlen(const char *s) {
-  size_t n;
-  for (n=0; s[n] != '\0'; n++)
-    if (n > MAX_STRING_LEN - 1) return -1;
-  return n;
+  assert(s != NULL);
+  size_t i = 0;
+  while (s[i] != '\0') {
+    ++i;
+  }
+  return i;
 }
 
 char *strcpy(char *dst, const char *src) {
-  assert(strlen(src) != -1);
-  size_t i;
-  for (i = 0; src[i] != '\0'; i++) {
-    dst[i] = src[i];
-  }
-  dst[i] = '\0';
-  return dst;
+  assert(src != NULL && dst != NULL);
+  char *res = dst;
+  do {
+    *dst = *src;
+    dst++;
+    src++;
+  } while (*src != '\0');
+  return res;
 }
 
 char *strncpy(char *dst, const char *src, size_t n) {
-  assert(strlen(src) != -1);
+  assert(src != NULL && dst != NULL);
   size_t i;
   for (i = 0; i < n && src[i] != '\0'; i++) {
     dst[i] = src[i];
