@@ -48,7 +48,7 @@ int sprintf(char *str, const char *format, ...) {
   for ( ; *format != '\0'; ++format) {
     if (*format != '%') {
       *str = *format;
-      str++;
+      ++str;
     }
     else {
       switch(*(++format)) {
