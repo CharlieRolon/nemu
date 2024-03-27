@@ -47,12 +47,12 @@ int sprintf(char *str, const char *format, ...) {
 
   for ( ; *format != '\0'; format++) {
     if (*format != '%') {
-      *start = *format;
+      *str = *format;
       str++;
     }
     else {
       switch(*(++format)) {
-        case '%': *str = *format; str++; break;
+        case '%': *str = *format; ++str; break;
         case 'd': str += itoa(va_arg(pArgs, int), str, 10); break;
         case 's': 
           char *s = va_arg(pArgs, char*);
