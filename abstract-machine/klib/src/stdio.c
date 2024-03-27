@@ -45,7 +45,7 @@ int sprintf(char *str, const char *format, ...) {
   va_start(pArgs, format);
   char *start = str;
 
-  for ( ; *format != '\0'; format++) {
+  for ( ; *format != '\0'; ++format) {
     if (*format != '%') {
       *str = *format;
       str++;
