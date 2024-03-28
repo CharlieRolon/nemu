@@ -30,9 +30,15 @@ int itoa(int n, char *s, int base) {
   if (sign < 0) n = -n;
   do {
     bit = n % base;
-    if (bit >= 10) s[i++] = 'a' + bit - 10;
-    else s[i++] = '0' + bit;
-  } while ((n/=base) > 0);
+    if (bit >= 10) {
+      s[i] = 'a' + bit - 10;
+      i++;
+    }
+    else {
+      s[i] = '0' + bit;
+      i++;
+    }
+  } while ((n /= base) > 0);
   if (sign < 0) s[i++] = '-';
   s[i] = '\0';
   reverse(s, i);
