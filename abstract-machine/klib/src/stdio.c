@@ -68,9 +68,14 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *str, const char *format, ...) {
-  va_list pArgs;
-  va_start(pArgs, format);
-  return vsprintf(str, format, pArgs);
+  va_list ap;
+  int ret;
+
+  va_start(ap, format);
+  ret = vsprintf(str, format, ap);
+  va_end(ap);
+
+  return ret;
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
