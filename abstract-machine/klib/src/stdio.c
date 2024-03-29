@@ -16,7 +16,7 @@ static void reverse(char *s, int len) {
   }
 }
 
-static int itoa(int n, char *s, int base) {
+static int itoa(int n, char *s, unsigned int base) {
   assert(base <= 16);
   
   int i = 0, sign = n, bit;
