@@ -21,11 +21,12 @@ static int itoa(int n, char *s, unsigned int base) {
   
   int i = 0, sign = n, bit;
   if (sign < 0) n = -n;
+  unsigned int num = (unsigned int)n;
   do {
-    bit = n % base;
+    bit = num % base;
     if (bit >= 10) s[i++] = 'a' + bit - 10;
     else s[i++] = '0' + bit;
-  } while ((n = n / base) > 0);
+  } while ((num = num / base) > 0);
   if (sign < 0) s[i++] = '-';
   s[i] = '\0';
   reverse(s, i);
