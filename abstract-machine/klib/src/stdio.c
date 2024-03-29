@@ -30,7 +30,7 @@ int itoa(int n, char *s, int base) {
       s[i] = '0' + bit;
       i++;
     }
-  } while ((n /= base) > 0);
+} while ((n = n / base) > 0);
   if (sign < 0) s[i++] = '-';
   s[i] = '\0';
   reverse(s, i);
