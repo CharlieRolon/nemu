@@ -3,6 +3,7 @@
 #include <klib-macros.h>
 #include <stdarg.h>
 
+#define BUF_SIZE 4096
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 static void reverse(char *s, int len) {
@@ -38,6 +39,7 @@ int printf(const char *fmt, ...) {
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
   char *start = out;
+  memset(out, '\0', BUF_SIZE);
 
   for ( ; *fmt != '\0'; ++fmt) {
     if (*fmt != '%') {
