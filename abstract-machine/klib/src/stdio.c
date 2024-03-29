@@ -6,31 +6,30 @@
 #define BUF_SIZE 256
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-static void reverse(char *s, int len) {
-  char *end = s + len - 1;
-  char tmp;
-  while (s < end) {
-    tmp = *s;
-    *s = *end;
-    *end = tmp;
-  }
-}
-
 static int itoa(int n, char *s, unsigned int base) {
   assert(base <= 16);
   
-  int i = 0, sign = n, bit;
-  if (sign < 0) n = -n;
-  unsigned int num = (unsigned int)n;
+  char index[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  unsigned unum;
+  int i=0, j, k;
+  if (base==10 && n < 0) {
+    unum = (unsigned)(-n);
+    s[i++] = '-';
+  }
+  else unum = (unsigned)n;
   do {
-    bit = num % base;
-    if (bit >= 10) s[i++] = 'a' + bit - 10;
-    else s[i++] = '0' + bit;
-  } while ((num = num / base) > 0);
-  if (sign < 0) s[i++] = '-';
+    s[i++] = index[unum%base];
+    unum /= base;
+  } while (unum);
   s[i] = '\0';
-  reverse(s, i);
-
+  if (s[0]=='-') k=1;
+  else k = 0;
+  char temp;
+  for (j=k; j<=(i-k-1)/2; j++) {
+    temp = s[j];
+    s[j] = s[i-j-1];
+    s[i-j-1] = temp;
+  }
   return i;
 }
 
