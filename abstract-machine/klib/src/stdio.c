@@ -5,14 +5,6 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-int printf(const char *fmt, ...) {
-  panic("Not implemented");
-}
-
-int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
-}
-
 void reverse(char *s, int len) {
   char *end = s + len - 1;
   char tmp;
@@ -46,32 +38,39 @@ int itoa(int n, char *s, int base) {
   return i;
 }
 
-int sprintf(char *str, const char *format, ...) {
-  va_list pArgs;
-  va_start(pArgs, format);
-  char *start = str;
+int printf(const char *fmt, ...) {
+  panic("Not implemented");
+}
 
-  for ( ; *format != '\0'; ++format) {
-    if (*format != '%') {
-      *str = *format;
-      ++str;
+int vsprintf(char *out, const char *fmt, va_list ap) {
+  char *start = out;
+
+  for ( ; *fmt != '\0'; ++fmt) {
+    if (*fmt != '%') {
+      *out = *fmt;
+      ++out;
     }
     else {
-      switch(*(++format)) {
-        case '%': *str = *format; ++str; break;
-        case 'd': str += itoa(va_arg(pArgs, int), str, 10); break;
+      switch(*(++fmt)) {
+        case '%': *out = *fmt; ++out; break;
+        case 'd': out += itoa(va_arg(ap, int), out, 10); break;
         case 's': 
-          char *s = va_arg(pArgs, char*);
-          strcpy(str, s);
-          str += strlen(str);
+          char *s = va_arg(ap, char*);
+          strcpy(out, s);
+          out += strlen(out);
           break;
       }
     }
   }
-  *str = '\0';
-  va_end(pArgs);
+  *out = '\0';
 
-  return str - start;
+  return out - start;
+}
+
+int sprintf(char *str, const char *format, ...) {
+  va_list pArgs;
+  va_start(pArgs, format);
+  return vsprintf(str, format, pArgs);
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
