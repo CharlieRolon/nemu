@@ -33,10 +33,6 @@ static int itoa(int n, char *s, unsigned int base) {
   return i;
 }
 
-int printf(const char *fmt, ...) {
-  panic("Not implemented");
-}
-
 int vsprintf(char *out, const char *fmt, va_list ap) {
   char *start = out;
   memset(out, '\0', BUF_SIZE);
@@ -61,6 +57,23 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
   *out = '\0';
 
   return out - start;
+}
+
+int printf(const char *fmt, ...) {
+  va_list ap;
+  int ret;
+  va_start(ap, fmt);
+
+  char buf[128];
+  ret = vsprintf(buf, fmt, ap);
+  va_end(ap);
+
+  char *p = buf;
+  while (*p != '\0') {
+    putch(*p);
+    p++;
+  }
+  return ret;
 }
 
 int sprintf(char *str, const char *format, ...) {
