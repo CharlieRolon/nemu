@@ -64,15 +64,12 @@ int printf(const char *fmt, ...) {
   int ret;
   va_start(ap, fmt);
 
-  char buf[128];
+  char buf[BUF_SIZE];
   ret = vsprintf(buf, fmt, ap);
   va_end(ap);
 
-  char *p = buf;
-  while (*p != '\0') {
-    putch(*p);
-    p++;
-  }
+  putstr(buf);
+  
   return ret;
 }
 
