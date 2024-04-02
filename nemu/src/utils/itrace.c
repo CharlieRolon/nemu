@@ -43,7 +43,9 @@ void display_inst() {
     } while (((i = (i+1)%MAX_IRINGBUF) != end));
     puts(ANSI_NONE);
 }
+#endif
 
+#ifdef CONFIG_FTRACE
 /* parse the ELF file */
 typedef struct {
     char name[32];
@@ -488,7 +490,9 @@ void trace_func_ret(paddr_t pc) {
 		}
 	}
 }
+#endif
 
+#ifdef CONFIG_DTRACE
 void trace_dread(paddr_t addr, int len, IOMap *map) {
 	log_write("dtrace: read  %10s at  " FMT_PADDR " ,%d\n", map->name, addr, len);
 }
