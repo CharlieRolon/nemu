@@ -16,6 +16,7 @@
 #include <common.h>
 #include <device/map.h>
 #include <SDL2/SDL.h>
+#include <stdio.h>
 
 enum {
   reg_freq,
@@ -30,7 +31,43 @@ enum {
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
+static void audio_play(void *userdata, uint8_t *stream, int len) {
+  int nread = len;
+  int count = audio_base[reg_count];
+
+  if (count < len) nread = count;
+  memcpy(stream, sbuf, nread);
+  if (len > nread) memset(stream + nread, 0, len - nread);
+
+  int remain = count - nread;
+  audio_base[reg_count] = remain;
+  
+  //sbuf remained data shift left
+  for (int i = 0; i < remain; i++)
+    sbuf[i] = sbuf[i + nread];
+  memset(sbuf + count - nread, 0, nread);
+}
+
+static void init_audio_sdl() {
+  SDL_AudioSpec s = {};
+  s.format = AUDIO_S16SYS;
+  s.userdata = NULL;
+
+  s.freq = audio_base[reg_freq];
+  s.channels = audio_base[reg_channels];
+  s.samples = audio_base[reg_samples];
+  s.callback = audio_play;
+
+  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  SDL_OpenAudio(&s, NULL);
+  SDL_PauseAudio(0);
+}
+
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+  if (audio_base[reg_init] == false) {
+    init_audio_sdl();
+    audio_base[reg_init] = true;
+  }
 }
 
 void init_audio() {
